@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"image/png"
 	"log"
 	"net/http"
 	"text/template"
@@ -12,6 +13,7 @@ type HttpHandler func(http.ResponseWriter, *http.Request)
 func HttpStartServer(addr string) {
 	http.HandleFunc("/", HttpView(HttpIndex))
 	http.HandleFunc("/plot.png", HttpView(HttpPlot))
+	http.HandleFunc("/favicon.png", HttpView(HttpFavicon))
 	log.Fatal(http.ListenAndServe(addr, nil))
 }
 
@@ -38,6 +40,7 @@ var (
 	<html>
 		<head>
 			<title>Monitor</title>
+			<link rel="icon" type="image/png" href="/favicon.png" />
 		</head>
 		<body>
 		<style>
@@ -106,4 +109,11 @@ func HttpPlot(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "image/png")
 	w.Write(png.Data)
+}
+
+func HttpFavicon(w http.ResponseWriter, r *http.Request) {
+	icon := Favicon()
+	w.Header().Set("Content-Type", "image/png")
+	err := png.Encode(w, icon)
+	panicOnError(err)
 }
