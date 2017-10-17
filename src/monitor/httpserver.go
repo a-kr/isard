@@ -73,9 +73,28 @@ var (
 	`))
 )
 
+func filterItems(items []Item, names []string) []Item {
+	result := make([]Item, 0)
+	for _, x := range items {
+		for _, s := range names {
+			if x.Name == s {
+				result = append(result, x)
+				break
+			}
+		}
+	}
+	return result
+}
+
 func HttpIndex(w http.ResponseWriter, r *http.Request) {
 	items, err := FindItems()
 	panicOnError(err)
+
+	r.ParseForm()
+
+	if len(r.Form["item"]) > 0 {
+		items = filterItems(items, r.Form["item"])
+	}
 
 	hours := IntOrDefault(r.FormValue("hours"), 24)
 
