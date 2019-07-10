@@ -14,7 +14,7 @@ set lmargin 7
 set format x ""
 
 set multiplot layout 4,1 rowsfirst
-set ytics 0.5,1
+#set ytics 0.5,1
 plot "{{.InputFile}}" using 1:2 with lines title "Load Average" lt 1 lw 2
 set tmargin 0
 set ytics 500,1000

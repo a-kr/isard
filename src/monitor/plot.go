@@ -84,6 +84,15 @@ type PngImage struct {
 	Data []byte
 }
 
+func ReadData(item string) (string, error) {
+	collectedData := path.Join(*dataDir, item, "data.txt")
+	bs, err := ioutil.ReadFile(collectedData)
+	if err != nil {
+		return "", err
+	}
+	return string(bs), nil
+}
+
 func Plot(item string, opts PlotOptions) (*PngImage, error) {
 	opts.FillDefaults()
 
