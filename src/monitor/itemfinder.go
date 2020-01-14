@@ -59,7 +59,6 @@ func FindItems() ([]Item, error) {
 			}
 		}
 
-
 		result = append(result, item)
 	}
 	return result, nil

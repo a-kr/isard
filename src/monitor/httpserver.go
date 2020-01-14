@@ -1,9 +1,9 @@
 package main
 
 import (
-	"io"
 	"fmt"
 	"image/png"
+	"io"
 	"log"
 	"net/http"
 	"text/template"
