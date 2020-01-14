@@ -75,7 +75,7 @@ var (
 		{{ range .Items }}
 		<div class="item">
 			<p>
-				<strong>{{ .Name }}</strong>
+				<a href="/plot.png?item={{ .Name }}&hours={{ $.Hours }}&width=490&height=300" target="_blank"><strong>{{ .Name }}</strong></a>
 				{{ range .Tags }}
 					<a href="?tag={{ . }}" class="taglink">#{{ . }}</a>
 				{{ end }}
