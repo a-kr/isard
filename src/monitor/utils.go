@@ -33,10 +33,10 @@ func SameStringArrays(a1 []string, a2 []string) bool {
 		return false
 	}
 	items := make(map[string]int)
-	for _, x := range(a1) {
+	for _, x := range a1 {
 		items[x] = 1
 	}
-	for _, x := range(a2) {
+	for _, x := range a2 {
 		items[x] += 1
 	}
 	for _, n := range items {

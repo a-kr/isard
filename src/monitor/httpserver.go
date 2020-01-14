@@ -1,9 +1,9 @@
 package main
 
 import (
-	"io"
 	"fmt"
 	"image/png"
+	"io"
 	"log"
 	"net/http"
 	"text/template"
@@ -37,6 +37,7 @@ func panicOnError(err error) {
 }
 
 var (
+	NewWindowK    = 2
 	IndexTemplate = template.Must(template.New("http_index").Parse(`
 	<!DOCTYPE html>
 	<html>
@@ -51,7 +52,11 @@ var (
 			float: left;
 			margin: 8px;
 			padding: 8px;
+			padding-top: 0px;
 			background-color: #eee;
+		}
+		p {
+			margin: 6px;
 		}
 		a.taglink {
 			color: gray;
@@ -63,13 +68,21 @@ var (
 		}
 		</style>
 		<div>
-			<a href="{{ .BaseUrl }}hours=1">1h</a>
-			<a href="{{ .BaseUrl }}hours=4">4h</a>
-			<a href="{{ .BaseUrl }}hours=24">24h</a>
-			<a href="{{ .BaseUrl }}hours=72">72h</a>
-			<a href="{{ .BaseUrl }}hours=168">7d</a>
-			<a href="{{ .BaseUrl }}hours=744">31d</a>
-			<a href="{{ .BaseUrl }}hours=2232">3m</a>
+			Time:
+			<a href="{{ .BaseUrl }}hours=1&width={{ $.Width }}&height={{ $.Height }}">1h</a>
+			<a href="{{ .BaseUrl }}hours=4&width={{ $.Width }}&height={{ $.Height }}">4h</a>
+			<a href="{{ .BaseUrl }}hours=24&width={{ $.Width }}&height={{ $.Height }}">24h</a>
+			<a href="{{ .BaseUrl }}hours=72&width={{ $.Width }}&height={{ $.Height }}">72h</a>
+			<a href="{{ .BaseUrl }}hours=168&width={{ $.Width }}&height={{ $.Height }}">7d</a>
+			<a href="{{ .BaseUrl }}hours=744&width={{ $.Width }}&height={{ $.Height }}">31d</a>
+			<a href="{{ .BaseUrl }}hours=2232&width={{ $.Width }}&height={{ $.Height }}">3M</a>
+			<a href="{{ .BaseUrl }}width={{ $.Width }}&height={{ $.Height }}">default</a>
+		</div>
+		<div>
+			Size:
+			<a href="{{ .BaseUrl }}hours={{ $.Hours }}&width=640&height=480">640x480</a>
+			<a href="{{ .BaseUrl }}hours={{ $.Hours }}&width=512&height=400">512x400</a>
+			<a href="{{ .BaseUrl }}hours={{ $.Hours }}">default</a>
 		</div>
 		<hr/>
 		{{ range .Items }}
@@ -80,7 +93,9 @@ var (
 					<a href="?tag={{ . }}" class="taglink">#{{ . }}</a>
 				{{ end }}
 			</p>
-			<img src="/plot.png?item={{ .Name }}&hours={{ $.Hours }}&width=490&height=300" width="490" height="300"/>
+			<a href="/plot.png?item={{ .Name }}&hours={{ $.Hours }}&width={{ $.NewWidth }}&height={{ $.NewHeight }}" target="_blank">
+				<img src="/plot.png?item={{ .Name }}&hours={{ $.Hours }}&width={{ $.Width }}&height={{ $.Height }}" width="{{ $.Width }}" height="{{ $.Height }}"/>
+			</a>
 		</div>
 		{{ end }}
 		</body>
@@ -118,7 +133,8 @@ func HttpIndex(w http.ResponseWriter, r *http.Request) {
 	items, err := FindItems()
 	panicOnError(err)
 
-	r.ParseForm()
+	err = r.ParseForm()
+	panicOnError(err)
 
 	baseurl := "/?"
 
@@ -130,13 +146,20 @@ func HttpIndex(w http.ResponseWriter, r *http.Request) {
 		items = filterItems(items, r.Form["item"])
 	}
 
+	// Дефолтные параметры для отрисовки страницы
 	hours := IntOrDefault(r.FormValue("hours"), 24)
+	width := IntOrDefault(r.FormValue("width"), 490)
+	height := IntOrDefault(r.FormValue("height"), 300)
 
 	ctx := &struct {
-		Hours   int
-		Items   []Item
-		BaseUrl string
-	}{hours, items, baseurl}
+		Hours     int
+		Width     int
+		Height    int
+		NewWidth  int // ширина при открытии в новом окне
+		NewHeight int // высота при открытии в новом окне
+		Items     []Item
+		BaseUrl   string
+	}{hours, width, height, width * NewWindowK, height * NewWindowK, items, baseurl}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = IndexTemplate.Execute(w, ctx)

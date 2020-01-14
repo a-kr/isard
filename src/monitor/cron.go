@@ -112,7 +112,7 @@ func Cron() {
 			}
 			itemsWithCronRules = append(itemsWithCronRules, item.Name)
 			if rule.Matches(now) {
-				go func(itemName string){
+				go func(itemName string) {
 					defer func() {
 						if err := recover(); err != nil {
 							log.Printf("[%s] panicked: %s", itemName, err)
