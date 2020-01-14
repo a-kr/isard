@@ -37,6 +37,7 @@ func panicOnError(err error) {
 }
 
 var (
+	NewWindowK    = 2
 	IndexTemplate = template.Must(template.New("http_index").Parse(`
 	<!DOCTYPE html>
 	<html>
@@ -87,12 +88,14 @@ var (
 		{{ range .Items }}
 		<div class="item">
 			<p>
-				<a href="/plot.png?item={{ .Name }}&hours={{ $.Hours }}&width={{ $.Width }}&height={{ $.Height }}" target="_blank"><strong>{{ .Name }}</strong></a>
+				<strong>{{ .Name }}</strong>
 				{{ range .Tags }}
 					<a href="?tag={{ . }}" class="taglink">#{{ . }}</a>
 				{{ end }}
 			</p>
-			<img src="/plot.png?item={{ .Name }}&hours={{ $.Hours }}&width={{ $.Width }}&height={{ $.Height }}" width="{{ $.Width }}" height="{{ $.Height }}"/>
+			<a href="/plot.png?item={{ .Name }}&hours={{ $.Hours }}&width={{ $.NewWidth }}&height={{ $.NewHeight }}" target="_blank">
+				<img src="/plot.png?item={{ .Name }}&hours={{ $.Hours }}&width={{ $.Width }}&height={{ $.Height }}" width="{{ $.Width }}" height="{{ $.Height }}"/>
+			</a>
 		</div>
 		{{ end }}
 		</body>
@@ -149,12 +152,14 @@ func HttpIndex(w http.ResponseWriter, r *http.Request) {
 	height := IntOrDefault(r.FormValue("height"), 300)
 
 	ctx := &struct {
-		Hours   int
-		Width   int
-		Height  int
-		Items   []Item
-		BaseUrl string
-	}{hours, width, height, items, baseurl}
+		Hours     int
+		Width     int
+		Height    int
+		NewWidth  int // ширина при открытии в новом окне
+		NewHeight int // высота при открытии в новом окне
+		Items     []Item
+		BaseUrl   string
+	}{hours, width, height, width * NewWindowK, height * NewWindowK, items, baseurl}
 
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	err = IndexTemplate.Execute(w, ctx)
